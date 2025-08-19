@@ -1,4 +1,29 @@
 import streamlit as st
+import os
+
+# --- عداد الزوار ---
+COUNTER_FILE = "counter.txt"
+
+def get_visitor_count():
+    if not os.path.exists(COUNTER_FILE):
+        with open(COUNTER_FILE, "w") as f:
+            f.write("0")
+    with open(COUNTER_FILE, "r") as f:
+        count = int(f.read().strip())
+    return count
+
+def increment_visitor_count():
+    count = get_visitor_count() + 1
+    with open(COUNTER_FILE, "w") as f:
+        f.write(str(count))
+    return count
+
+# --- شغل الكود عند فتح الصفحة ---
+visitor_count = increment_visitor_count()
+
+# --- عرض العداد في واجهة التطبيق ---
+st.sidebar.success(f"عدد الزوار: {visitor_count}")
+
 from utils import check_url_safety
 
 st.set_page_config(page_title="🔒 URL Safety Checker", page_icon="🛡️", layout="centered")
