@@ -22,7 +22,7 @@ def increment_visitor_count():
 visitor_count = increment_visitor_count()
 
 # --- عرض العداد في واجهة التطبيق ---
-st.sidebar.success(f"عدد الزوار: {visitor_count}")
+st.sidebar.success(f"Number of visitors: {visitor_count}")
 
 from utils import check_url_safety
 
