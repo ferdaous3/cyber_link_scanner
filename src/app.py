@@ -1,39 +1,39 @@
 import streamlit as st
-import os
-
-# --- عداد الزوار ---
-COUNTER_FILE = "counter.txt"
-
-def get_visitor_count():
-    """قراءة عدد الزوار من الملف أو تهيئته إذا غير موجود"""
-    if not os.path.exists(COUNTER_FILE):
-        with open(COUNTER_FILE, "w") as f:
-            f.write("0")
-    try:
-        with open(COUNTER_FILE, "r") as f:
-            count = int(f.read().strip())
-    except:
-        count = 0
-    return count
-
-def increment_visitor_count():
-    """زيادة العدد وتخزينه دائمًا في الملف"""
-    count = get_visitor_count() + 1
-    with open(COUNTER_FILE, "w") as f:
-        f.write(str(count))
-    return count
-
-# --- شغل الكود عند فتح الصفحة ---
-visitor_count = increment_visitor_count()
-
-# --- عرض العداد في واجهة التطبيق ---
-st.sidebar.success(f"Number of visitors: {visitor_count}")
-
-# --- بقية الكود ---
+import sqlite3
 from utils import check_url_safety
 
-st.set_page_config(page_title="🔒 URL Safety Checker", page_icon="🛡️", layout="centered")
+# --- إعداد قاعدة البيانات لعداد الزوار ---
+conn = sqlite3.connect("visitors.db")
+c = conn.cursor()
 
+# إنشاء جدول لو ما موجود
+c.execute("""
+CREATE TABLE IF NOT EXISTS counter (
+    id INTEGER PRIMARY KEY,
+    count INTEGER
+)
+""")
+
+# جلب العدد الحالي
+c.execute("SELECT count FROM counter WHERE id=1")
+row = c.fetchone()
+if row is None:
+    c.execute("INSERT INTO counter (id, count) VALUES (1, 0)")
+    conn.commit()
+    visitor_count = 0
+else:
+    visitor_count = row[0]
+
+# زيادة العدد وتخزينه
+visitor_count += 1
+c.execute("UPDATE counter SET count=? WHERE id=1", (visitor_count,))
+conn.commit()
+
+# --- عرض العداد ---
+st.sidebar.success(f"Number of visitors: {visitor_count}")
+
+# --- إعداد الصفحة ---
+st.set_page_config(page_title="🔒 URL Safety Checker", page_icon="🛡️", layout="centered")
 st.title("🔒 URL Safety Checker")
 st.write("Enter a link and check if it’s safe or potentially harmful.")
 
